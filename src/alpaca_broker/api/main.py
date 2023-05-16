@@ -4,13 +4,28 @@ import logging
 
 import coloredlogs
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+
+from alpaca_broker.api.routes import accounts
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(accounts.router)
 
 
 @app.on_event("startup")
 def startup_event() -> None:
     """Run API startup events."""
+    # Reset testing overrides before running the server
+    app.dependency_overrides = {}
     # Remove all handlers associated with the root logger object.
     for handler in logging.root.handlers:
         logging.root.removeHandler(handler)
@@ -19,6 +34,6 @@ def startup_event() -> None:
 
 
 @app.get("/")
-def read_root() -> str:
-    """Read root."""
-    return "Hello world"
+def docs() -> RedirectResponse:
+    """Automatically redirect homepage to docs."""
+    return RedirectResponse(url="/docs")

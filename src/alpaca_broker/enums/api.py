@@ -6,3 +6,4 @@ class Routers(str, Enum):
     """Possible routers of the API."""
 
     ACCOUNTS = "/accounts"
+    USERS = "/users"
