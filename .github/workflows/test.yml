@@ -6,6 +6,9 @@ on:
       - main
       - master
   pull_request:
+env:
+  BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
+  BROKER_API_SECRET: ${{ secrets.BROKER_API_SECRET }}
 
 jobs:
   test:
