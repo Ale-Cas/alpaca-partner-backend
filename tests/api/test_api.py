@@ -3,7 +3,7 @@
 import httpx
 from fastapi.testclient import TestClient
 
-from alpaca_broker.api import app
+from alpaca_broker.api.main import app
 
 client = TestClient(app)
 

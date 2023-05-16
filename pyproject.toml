@@ -5,20 +5,21 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]  # https://python-poetry.org/docs/pyproject/
 name = "alpaca-broker"
 version = "0.0.0"
-description = "A Python package that ..."
+description = "Python implementation of the backend for a trading app leveraging Alpaca's Broker API, alpaca-py and FastAPI."
 authors = ["Alessio Castrica <castricaalessio@gmail.com>"]
 readme = "README.md"
-repository = " https://github.com/Ale-Cas/alpaca-broker   "
+repository = "https://github.com/Ale-Cas/alpaca-broker"
 
 [tool.poetry.dependencies]  # https://python-poetry.org/docs/dependency-specification/
 coloredlogs = "^15.0.1"
 fastapi = { extras = ["all"], version = "^0.92.0" }
 gunicorn = "^20.1.0"
 poethepoet = "^0.18.1"
-pydantic = "^1.10.5"
+pydantic = {extras = ["dotenv"], version = "^1.10.7"}
 python = "^3.10.5"
 streamlit = "^1.19.0"
 uvicorn = { extras = ["standard"], version = "^0.20.0" }
+alpaca-py = "^0.8.2"
 
 [tool.poetry.group.test.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 absolufy-imports = "^0.3.1"
@@ -36,6 +37,7 @@ ruff = "^0.0.254"
 cruft = "^2.12.0"
 jupyterlab = "^3.6.1"
 pdoc = "^13.0.0"
+deptry = "^0.11.0"
 
 [tool.black]  # https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html#configuration-via-a-file
 line-length = 100
@@ -67,7 +69,7 @@ warn_unreachable = true
 
 [tool.pytest.ini_options]  # https://docs.pytest.org/en/latest/reference/reference.html#ini-options-ref
 addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=2 --junitxml=reports/pytest.xml"
-testpaths = ["src", "tests"]
+testpaths = ["tests"]
 xfail_strict = true
 
 [tool.ruff]  # https://github.com/charliermarsh/ruff
@@ -75,13 +77,16 @@ fix = true
 ignore-init-module-imports = true
 line-length = 100
 select = ["A", "B", "C4", "C90", "D", "DTZ", "E", "F", "I", "ISC", "N", "NPY", "PGH", "PIE", "PLC", "PLE", "PLR", "PLW", "PT", "RET", "RUF", "RSE", "SIM", "TID", "UP", "W", "YTT"]
-ignore = ["E501", "PGH001", "PGH002", "PGH003", "RET504", "S101"]
+ignore = ["E501", "PGH001", "PGH002", "PGH003", "RET504", "S101", "B008", "DTZ003"]
 unfixable = ["F401", "F841"]
 src = ["src", "tests"]
 target-version = "py310"
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
+
+[tool.deptry]
+ignore_transitive = ["alpaca-broker"]
 
 [tool.poe.tasks]  # https://github.com/nat-n/poethepoet
 
@@ -94,7 +99,7 @@ convention = "numpy"
         --host $host \
         --port $port \
         --reload \
-        alpaca_broker.api:app
+        alpaca_broker.api.main:app
     } else {
       gunicorn \
         --access-logfile - \
@@ -106,7 +111,7 @@ convention = "numpy"
         --worker-class uvicorn.workers.UvicornWorker \
         --worker-tmp-dir /dev/shm \
         --workers 2 \
-        alpaca_broker.api:app
+        alpaca_broker.api.main:app
     } fi
     """
 
@@ -136,7 +141,7 @@ convention = "numpy"
       --server.address $host
       --server.port $port
       --theme.base light
-      src/alpaca_broker/app.py
+      src/alpaca_broker/frontend/app.py
     """
   use_exec = true
 
@@ -207,3 +212,4 @@ convention = "numpy"
 
     [[tool.poe.tasks.test.sequence]]
     cmd = "coverage xml"
+
