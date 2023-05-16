@@ -6,9 +6,6 @@ on:
       - main
       - master
   pull_request:
-env:
-  BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
-  BROKER_API_SECRET: ${{ secrets.BROKER_API_SECRET }}
 
 jobs:
   test:
@@ -44,6 +41,9 @@ jobs:
         run: devcontainer exec --workspace-folder . poe lint
 
       - name: Test package
+        env:
+            BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
+            BROKER_API_SECRET: ${{ secrets.BROKER_API_SECRET }}
         run: devcontainer exec --workspace-folder . poe test
 
       - name: Upload coverage
