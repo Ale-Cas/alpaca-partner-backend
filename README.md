@@ -1,8 +1,8 @@
-[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url= https://github.com/Ale-Cas/alpaca-partner-backend   )
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/Ale-Cas/alpaca-partner-backend)
 
-# alpaca-partner-backend
+# Alpaca Partner Backend
 
-A Python package that ...
+Python implementation of the backend for a trading app leveraging [Alpaca's Broker API](https://alpaca.markets/docs/api-references/broker-api/), [alpaca-py](https://github.com/alpacahq/alpaca-py) and [FastAPI](https://fastapi.tiangolo.com/lo/).
 
 ## Using
 
