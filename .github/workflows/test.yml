@@ -36,17 +36,25 @@ jobs:
         run: |
           git config --global init.defaultBranch main
           PYTHON_VERSION=${{ matrix.python-version }} devcontainer up --workspace-folder .
+          
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+            # broker API keys
+            envkey_BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
+            envkey_BROKER_API_SECRET: ${{ secrets.BROKER_API_SECRET }}
+            # database connection
+            envkey_MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+            # user auth secret key
+            envkey_AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
 
       - name: Lint package
         run: devcontainer exec --workspace-folder . poe lint
 
       - name: Test package
-        env:
-            BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
-            BROKER_API_SECRET: ${{ secrets.BROKER_API_SECRET }}
         run: devcontainer exec --workspace-folder . poe test
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          files: reports/coverage.xml
+            files: reports/coverage.xml
