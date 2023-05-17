@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from pydantic import EmailStr
 
 from alpaca_broker.api.common import get_broker_client
 from alpaca_broker.database import MongoDatabase, get_db
@@ -26,29 +27,33 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def get_current_user(
-    database: MongoDatabase = Depends(get_db), token: str = Depends(oauth2_scheme)
+    database: MongoDatabase = Depends(get_db),
+    token: str | None = Depends(oauth2_scheme),
+    _email: EmailStr | None = None,
 ) -> User:
     """Function to get the current user and validate it's credentials."""
+    assert token or _email, "You must provide an oauth2 token or an email."
     _headers = {"WWW-Authenticate": "Bearer"}
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
         headers=_headers,
     )
-    try:
-        payload = jwt.decode(
-            token, SETTINGS.AUTH_SECRET_KEY, algorithms=[SETTINGS.HASHING_ALGORITHM]
-        )
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-    except JWTError as jwt_exception:
-        raise credentials_exception from jwt_exception
-    user = database.get_user_by_email(email=email)
+    if not _email and token:
+        try:
+            payload = jwt.decode(
+                token, SETTINGS.AUTH_SECRET_KEY, algorithms=[SETTINGS.HASHING_ALGORITHM]
+            )
+            _email = payload.get("sub")
+            if _email is None:
+                raise credentials_exception
+        except JWTError as jwt_exception:
+            raise credentials_exception from jwt_exception
+    user = database.get_user_by_email(email=_email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with email address {email} not found",
+            detail=f"User with email address {_email} not found",
             headers=_headers,
         )
     return user

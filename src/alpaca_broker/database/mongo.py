@@ -23,6 +23,7 @@ class MongoDatabase:
             The MongoClient from pymongo for the DB operations.
             In the tests is overridden using mongomock.
         """
+        self.client = client
         self.database: Database = client["sandbox"]
         self.users_collection: Collection = self.database["users"]
         self.users_collection.create_index("email", unique=True)
@@ -35,9 +36,15 @@ class MongoDatabase:
             ).dict()
         )
 
+    def get_all_users(self) -> list[User]:
+        """Get all users in the database."""
+        return [User(u) for u in list(self.users_collection.find())]
+
     def get_user_by_email(self, email: EmailStr) -> User:
         """Get the user by email."""
-        return self.users_collection.find_one(filter={"email": str(email)})
+        doc = self.users_collection.find_one(filter={"email": str(email)})
+        assert doc, f"Document with email {email} not found."
+        return User(**doc)
 
     def authenticate_user(
         self,
@@ -46,7 +53,7 @@ class MongoDatabase:
     ) -> User:
         """Authenticate user password."""
         user = self.get_user_by_email(email=email)
-        if not verify_password(password, user.hashed_password):
+        if not verify_password(password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid password.",

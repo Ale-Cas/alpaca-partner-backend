@@ -2,13 +2,16 @@
 
 import logging
 
-from alpaca.broker import Account, CreateAccountRequest
-from fastapi import APIRouter, Depends
+from alpaca.broker import Account
+from alpaca.common.exceptions import APIError as BrokerAPIError
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import EmailStr
 
 from alpaca_broker.api.common import get_broker_client
+from alpaca_broker.api.parsers import parse_account_to_jsonable
 from alpaca_broker.database import MongoDatabase, get_db
 from alpaca_broker.enums import Routers
-from alpaca_broker.models import UserCreate
+from alpaca_broker.models import AccountJson, CreateAccountRequest, UserCreate
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -24,9 +27,8 @@ broker_client = get_broker_client()
 @router.post("/")
 def create_account(
     account_request: CreateAccountRequest,
-    password: str,
     database: MongoDatabase = Depends(get_db),
-) -> Account:
+) -> AccountJson:
     """Create an Alpaca account from the account request.
 
     Parameters
@@ -36,18 +38,59 @@ def create_account(
 
     Returns
     -------
-    Account:
+    AccountJson:
         The account that has been created.
     """
     insert_result = database.create_user(
         UserCreate(
             email=account_request.contact.email_address,
-            password=password,
+            password=account_request.password,
         )
     )
     log.info("User %s created", insert_result.inserted_id)
     log.info("Account creation request.")
     log.info(account_request.dict(exclude_none=True))
-    account = broker_client.create_account(account_request)
+    try:
+        account = broker_client.create_account(account_request)
+    except BrokerAPIError as broker_api_error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"An account with the same email address {account_request.contact.email_address} already exists.",
+        ) from broker_api_error
     assert isinstance(account, Account), "The account has not being parsed for pydantic validation."
-    return account
+    return parse_account_to_jsonable(account)
+
+
+@router.get("/{email}")
+def get_account_by_email(
+    email: EmailStr,
+) -> AccountJson:
+    """
+    Get the account with a specific email.
+
+    Parameters
+    ----------
+    `account_request`: CreateAccountRequest
+        The parameters for the account request.
+
+    Returns
+    -------
+    AccountJson:
+        The account that has been created.
+    """
+    accounts = broker_client.get(f"/accounts?query={str(email)}")
+    if not accounts:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email address {email} not found",
+        )
+    account_id = accounts[0].get("id")
+    assert isinstance(account_id, str)
+    try:
+        account = broker_client.get_account_by_id(account_id=account_id)
+    except BrokerAPIError as broker_api_error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Account with ID {account_id} not found.",
+        ) from broker_api_error
+    return parse_account_to_jsonable(account)

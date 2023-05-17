@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from alpaca_broker.api.routes import accounts
+from alpaca_broker.api.routes import accounts, users
 
 app = FastAPI()
 
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(accounts.router)
+app.include_router(users.router)
 
 
 @app.on_event("startup")

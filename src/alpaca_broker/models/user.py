@@ -2,6 +2,7 @@
 
 from uuid import UUID
 
+from alpaca.broker import CreateAccountRequest as AlpacaCreateAccountRequest
 from pydantic import BaseModel, EmailStr
 
 from alpaca_broker.models import DatabaseDocument
@@ -11,18 +12,29 @@ class UserBase(DatabaseDocument):
     """Base model for the User stored in MongoDB."""
 
     email: EmailStr
-    alpaca_account_id: UUID
-    alpaca_account_number: int
 
 
 class User(UserBase):
-    """User data model for the User stored in MongoDB."""
+    """User data model for the User stored in MongoDB.
 
-    hashed_password: str
+    Attributes
+    ----------
+    `password`: str
+        Hashed password from the database.
+    """
+
+    password: str
 
 
 class UserOut(UserBase):
     """Output model for the User."""
+
+
+class UserWithAlpacaAccount(UserBase):
+    """Output model for the User."""
+
+    alpaca_account_id: UUID
+    alpaca_account_number: int
 
 
 class AuthCredentials(BaseModel):
@@ -57,3 +69,14 @@ class Token(BaseModel):
 
     access_token: str
     token_type: str
+
+
+class CreateAccountRequest(AlpacaCreateAccountRequest):
+    """
+    Extensions of the CreateAccountRequest from alpaca-py.
+
+    This includes the unashed password that is needed to create the user
+    and then the account from the alpaca_broker API.
+    """
+
+    password: str
