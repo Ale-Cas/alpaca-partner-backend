@@ -3,10 +3,11 @@
 import logging
 
 import coloredlogs
-from alpaca_partner_backend.api.routes import accounts, users
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+
+from alpaca_partner_backend.api.routes import accounts, assets, users
 
 app = FastAPI()
 
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(accounts.router)
+app.include_router(assets.router)
 app.include_router(users.router)
 
 

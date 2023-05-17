@@ -4,13 +4,14 @@ import logging
 
 from alpaca.broker import Account
 from alpaca.common.exceptions import APIError as BrokerAPIError
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import EmailStr
+
 from alpaca_partner_backend.api.common import get_broker_client
 from alpaca_partner_backend.api.parsers import parse_account_to_jsonable
 from alpaca_partner_backend.database import MongoDatabase, get_db
 from alpaca_partner_backend.enums import Routers
 from alpaca_partner_backend.models import AccountJson, CreateAccountRequest, UserCreate
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import EmailStr
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)

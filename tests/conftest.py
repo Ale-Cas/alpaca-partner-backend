@@ -5,14 +5,13 @@ import typing
 import mongomock
 import pytest
 from alpaca.broker import Account
-
-from alpaca_partner_backend.models import CreateAccountRequest, UserCreate
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
 
 from alpaca_partner_backend.api.main import app
 from alpaca_partner_backend.database import get_db
 from alpaca_partner_backend.database.mongo import MongoDatabase
+from alpaca_partner_backend.models import CreateAccountRequest, UserCreate
 from tests.api import conftest
 
 # Constants:
@@ -141,3 +140,27 @@ def mock_alpaca_account(alpaca_account: Account) -> str:
 def mock_get_alpaca_account_by_email(alpaca_account: Account) -> str:
     """Fake list of 1 Alpaca broker account returned in json format for reqmock."""
     return json.dumps([json.loads(alpaca_account.json())])
+
+
+@pytest.fixture()
+def mock_assets_json() -> str:
+    """Mock json response from Alpaca Broker API assets endpoint."""
+    return """
+        [
+            {
+              "id": "904837e3-3b76-47ec-b432-046db621571b",
+              "class": "us_equity",
+              "exchange": "NASDAQ",
+              "symbol": "AAPL",
+              "name": "Apple Inc. Common Stock",
+              "status": "active",
+              "tradable": true,
+              "marginable": true,
+              "shortable": true,
+              "easy_to_borrow": true,
+              "fractionable": true,
+              "last_close_pct_change": "string",
+              "last_price": "string"
+            }
+      ]
+      """

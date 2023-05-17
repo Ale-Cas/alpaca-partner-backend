@@ -36,7 +36,7 @@ COPY --chown=user:user poetry.lock* pyproject.toml /workspaces/alpaca-partner-ba
 RUN mkdir -p /home/user/.cache/pypoetry/ && mkdir -p /home/user/.config/pypoetry/ && \
     mkdir -p src/alpaca_partner_backend/ && touch src/alpaca_partner_backend/__init__.py && touch README.md
 RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
-    poetry install --only main --no-interaction
+    poetry install --sync --only main --no-interaction
 
 
 
@@ -53,7 +53,7 @@ RUN --mount=type=cache,target=/var/cache/apt/ \
 
 # Install the CI/CD Python dependencies in the virtual environment.
 RUN --mount=type=cache,target=/root/.cache/pypoetry/ \
-    poetry install --only main,test --no-interaction
+    poetry install --sync --only main,test --no-interaction
 
 
 
@@ -72,7 +72,7 @@ USER user
 
 # Install the development Python dependencies in the virtual environment.
 RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
-    poetry install --no-interaction
+    poetry install --sync --no-interaction
 
 # Persist output generated during docker build so that we can restore it in the dev container.
 COPY --chown=user:user .pre-commit-config.yaml /workspaces/alpaca-partner-backend/
