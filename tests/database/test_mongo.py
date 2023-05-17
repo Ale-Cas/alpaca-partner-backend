@@ -1,7 +1,7 @@
 """Test suite for the mongo module."""
 
-from alpaca_broker.database import MongoDatabase, get_db
-from alpaca_broker.models.user import UserCreate
+from alpaca_partner_backend.database import MongoDatabase, get_db
+from alpaca_partner_backend.models.user import UserCreate
 
 
 def test_get_db() -> None:

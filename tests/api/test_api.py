@@ -1,9 +1,8 @@
-"""Test alpaca-broker REST API."""
+"""Test alpaca-partner-backend REST API."""
 
 import httpx
+from alpaca_partner_backend.api.main import app
 from fastapi.testclient import TestClient
-
-from alpaca_broker.api.main import app
 
 client = TestClient(app)
 

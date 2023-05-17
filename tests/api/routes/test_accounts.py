@@ -2,13 +2,13 @@
 import httpx
 from alpaca.broker import Account, CreateAccountRequest
 from alpaca.common.enums import BaseURL
+from alpaca_partner_backend.api.routes import accounts
+from alpaca_partner_backend.database.mongo import MongoDatabase
+from alpaca_partner_backend.enums import Routers
+from alpaca_partner_backend.models import AccountJson
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
 
-from alpaca_broker.api.routes import accounts
-from alpaca_broker.database.mongo import MongoDatabase
-from alpaca_broker.enums import Routers
-from alpaca_broker.models import AccountJson
 from tests.conftest import TEST_EMAIL
 
 ROUTER = Routers.ACCOUNTS.value

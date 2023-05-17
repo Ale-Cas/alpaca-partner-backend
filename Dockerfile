@@ -24,17 +24,17 @@ RUN groupadd --gid $GID user && \
 USER user
 
 # Create and activate a virtual environment.
-RUN python -m venv /opt/alpaca-broker-env
-ENV PATH /opt/alpaca-broker-env/bin:$PATH
-ENV VIRTUAL_ENV /opt/alpaca-broker-env
+RUN python -m venv /opt/alpaca-partner-backend-env
+ENV PATH /opt/alpaca-partner-backend-env/bin:$PATH
+ENV VIRTUAL_ENV /opt/alpaca-partner-backend-env
 
 # Set the working directory.
-WORKDIR /workspaces/alpaca-broker/
+WORKDIR /workspaces/alpaca-partner-backend/
 
 # Install the run time Python dependencies in the virtual environment.
-COPY --chown=user:user poetry.lock* pyproject.toml /workspaces/alpaca-broker/
+COPY --chown=user:user poetry.lock* pyproject.toml /workspaces/alpaca-partner-backend/
 RUN mkdir -p /home/user/.cache/pypoetry/ && mkdir -p /home/user/.config/pypoetry/ && \
-    mkdir -p src/alpaca_broker/ && touch src/alpaca_broker/__init__.py && touch README.md
+    mkdir -p src/alpaca_partner_backend/ && touch src/alpaca_partner_backend/__init__.py && touch README.md
 RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
     poetry install --only main --no-interaction
 
@@ -75,7 +75,7 @@ RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
     poetry install --no-interaction
 
 # Persist output generated during docker build so that we can restore it in the dev container.
-COPY --chown=user:user .pre-commit-config.yaml /workspaces/alpaca-broker/
+COPY --chown=user:user .pre-commit-config.yaml /workspaces/alpaca-partner-backend/
 RUN mkdir -p /opt/build/poetry/ && cp poetry.lock /opt/build/poetry/ && \
     git init && pre-commit install --install-hooks && \
     mkdir -p /opt/build/git/ && cp .git/hooks/commit-msg .git/hooks/pre-commit /opt/build/git/
@@ -105,5 +105,5 @@ FROM base AS app
 COPY --chown=user:user . .
 
 # Expose the application.
-ENTRYPOINT ["/opt/alpaca-broker-env/bin/poe"]
+ENTRYPOINT ["/opt/alpaca-partner-backend-env/bin/poe"]
 CMD ["api"]

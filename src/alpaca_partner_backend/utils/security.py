@@ -2,11 +2,10 @@
 from datetime import datetime, timedelta
 from typing import Any
 
+from alpaca_partner_backend.settings import SETTINGS
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from passlib.context import CryptContext
-
-from alpaca_broker.settings import SETTINGS
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
 

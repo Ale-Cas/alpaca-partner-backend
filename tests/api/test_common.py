@@ -2,8 +2,7 @@
 
 
 from alpaca.broker import BrokerClient
-
-from alpaca_broker.api.common import get_broker_client
+from alpaca_partner_backend.api.common import get_broker_client
 
 
 def test_broker_client() -> None:

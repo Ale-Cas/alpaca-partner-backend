@@ -1,12 +1,12 @@
 {
-    "name": "alpaca-broker",
+    "name": "alpaca-partner-backend",
     "dockerComposeFile": "../docker-compose.yml",
     "service": "devcontainer",
-    "workspaceFolder": "/workspaces/alpaca-broker/",
+    "workspaceFolder": "/workspaces/alpaca-partner-backend/",
     "remoteUser": "user",
     "overrideCommand": true,
     "initializeCommand": ".devcontainer/init",
-    "postStartCommand": "cp --update /opt/build/poetry/poetry.lock /workspaces/alpaca-broker/ && mkdir -p /workspaces/alpaca-broker/.git/hooks/ && cp --update /opt/build/git/* /workspaces/alpaca-broker/.git/hooks/",
+    "postStartCommand": "cp --update /opt/build/poetry/poetry.lock /workspaces/alpaca-partner-backend/ && mkdir -p /workspaces/alpaca-partner-backend/.git/hooks/ && cp --update /opt/build/git/* /workspaces/alpaca-partner-backend/.git/hooks/",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -32,7 +32,7 @@
                     100
                 ],
                 "files.autoSave": "onFocusChange",
-                "python.defaultInterpreterPath": "/opt/alpaca-broker-env/bin/python",
+                "python.defaultInterpreterPath": "/opt/alpaca-partner-backend-env/bin/python",
                 "python.formatting.provider": "black",
                 "python.linting.mypyEnabled": true,
                 "python.terminal.activateEnvironment": false,

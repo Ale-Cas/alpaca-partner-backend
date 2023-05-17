@@ -3,8 +3,7 @@
 from functools import lru_cache
 
 from alpaca.broker import BrokerClient
-
-from alpaca_broker.settings import SETTINGS
+from alpaca_partner_backend.settings import SETTINGS
 
 
 @lru_cache

@@ -3,9 +3,8 @@
 from uuid import UUID
 
 from alpaca.broker import CreateAccountRequest as AlpacaCreateAccountRequest
+from alpaca_partner_backend.models import DatabaseDocument
 from pydantic import BaseModel, EmailStr
-
-from alpaca_broker.models import DatabaseDocument
 
 
 class UserBase(DatabaseDocument):
@@ -76,7 +75,7 @@ class CreateAccountRequest(AlpacaCreateAccountRequest):
     Extensions of the CreateAccountRequest from alpaca-py.
 
     This includes the unashed password that is needed to create the user
-    and then the account from the alpaca_broker API.
+    and then the account from the alpaca_partner_backend API.
     """
 
     password: str

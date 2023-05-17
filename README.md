@@ -1,12 +1,12 @@
-[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url= https://github.com/Ale-Cas/alpaca-broker   )
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url= https://github.com/Ale-Cas/alpaca-partner-backend   )
 
-# alpaca-broker
+# alpaca-partner-backend
 
 A Python package that ...
 
 ## Using
 
-_Python package_: to add and install this package as a dependency of your project, run `poetry add alpaca-broker`.
+_Python package_: to add and install this package as a dependency of your project, run `poetry add alpaca-partner-backend`.
 
 _Python application_: to serve this REST API, run `docker compose up app` and open [localhost:8000](http://localhost:8000) in your browser. Within the Dev Container, this is equivalent to running `poe api`.
 
@@ -64,7 +64,7 @@ _Python application_: to serve this REST API, run `docker compose up app` and op
 The following development environments are supported:
 
 1. ⭐️ _GitHub Codespaces_: click on _Code_ and select _Create codespace_ to start a Dev Container with [GitHub Codespaces](https://github.com/features/codespaces).
-1. ⭐️ _Dev Container (with container volume)_: click on [Open in Dev Containers](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url= https://github.com/Ale-Cas/alpaca-broker   ) to clone this repository in a container volume and create a Dev Container with VS Code.
+1. ⭐️ _Dev Container (with container volume)_: click on [Open in Dev Containers](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url= https://github.com/Ale-Cas/alpaca-partner-backend   ) to clone this repository in a container volume and create a Dev Container with VS Code.
 1. _Dev Container_: clone this repository, open it with VS Code, and run <kbd>Ctrl/⌘</kbd> + <kbd>⇧</kbd> + <kbd>P</kbd> → _Dev Containers: Reopen in Container_.
 1. _PyCharm_: clone this repository, open it with PyCharm, and [configure Docker Compose as a remote interpreter](https://www.jetbrains.com/help/pycharm/using-docker-compose-as-a-remote-interpreter.html#docker-compose-remote) with the `dev` service.
 1. _Terminal_: clone this repository, open it with your terminal, and run `docker compose up --detach dev` to start a Dev Container in the background, and then run `docker compose exec dev zsh` to open a shell prompt in the Dev Container.

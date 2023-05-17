@@ -1,7 +1,12 @@
 """Test security utils."""
 
 
-from alpaca_broker.utils.security import create_access_token, get_password_hash, verify_password
+from alpaca_partner_backend.utils.security import (
+    create_access_token,
+    get_password_hash,
+    verify_password,
+)
+
 from tests.conftest import TEST_EMAIL, TEST_PASSWORD
 
 

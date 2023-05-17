@@ -1,8 +1,7 @@
 """Test the parsers module."""
 from alpaca.broker import Account
-
-from alpaca_broker.api.parsers import parse_account_to_jsonable
-from alpaca_broker.models.api import AccountJson
+from alpaca_partner_backend.api.parsers import parse_account_to_jsonable
+from alpaca_partner_backend.models.api import AccountJson
 
 
 def test_parse_account_to_jsonable(alpaca_account: Account) -> None:

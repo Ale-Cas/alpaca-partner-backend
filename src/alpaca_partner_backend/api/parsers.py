@@ -1,7 +1,6 @@
 """Parse models for the API endpoints."""
 from alpaca.broker import Account
-
-from alpaca_broker.models import AccountJson
+from alpaca_partner_backend.models import AccountJson
 
 
 def parse_account_to_jsonable(account: Account) -> AccountJson:

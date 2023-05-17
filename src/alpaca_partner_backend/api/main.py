@@ -1,13 +1,12 @@
-"""alpaca-broker REST API."""
+"""alpaca-partner-backend REST API."""
 
 import logging
 
 import coloredlogs
+from alpaca_partner_backend.api.routes import accounts, users
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-
-from alpaca_broker.api.routes import accounts, users
 
 app = FastAPI()
 

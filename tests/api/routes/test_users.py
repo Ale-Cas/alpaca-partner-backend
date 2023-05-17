@@ -1,12 +1,11 @@
 """Test users router."""
 import httpx
+from alpaca_partner_backend.api.routes.users import get_current_user
+from alpaca_partner_backend.database.mongo import MongoDatabase
+from alpaca_partner_backend.enums import Routers
+from alpaca_partner_backend.models import AuthCredentials, UserCreate
+from alpaca_partner_backend.models.user import User
 from fastapi.testclient import TestClient
-
-from alpaca_broker.api.routes.users import get_current_user
-from alpaca_broker.database.mongo import MongoDatabase
-from alpaca_broker.enums import Routers
-from alpaca_broker.models import AuthCredentials, UserCreate
-from alpaca_broker.models.user import User
 
 ROUTER = Routers.USERS.value
 

@@ -5,13 +5,14 @@ import typing
 import mongomock
 import pytest
 from alpaca.broker import Account
+
+from alpaca_partner_backend.models import CreateAccountRequest, UserCreate
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
 
-from alpaca_broker.api.main import app
-from alpaca_broker.database import get_db
-from alpaca_broker.database.mongo import MongoDatabase
-from alpaca_broker.models import CreateAccountRequest, UserCreate
+from alpaca_partner_backend.api.main import app
+from alpaca_partner_backend.database import get_db
+from alpaca_partner_backend.database.mongo import MongoDatabase
 from tests.api import conftest
 
 # Constants:

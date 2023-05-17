@@ -1,1 +1,1 @@
-"""alpaca-broker test suite."""
+"""alpaca-partner-backend test suite."""

@@ -1,7 +1,7 @@
 """database package."""
 from functools import lru_cache
 
-from alpaca_broker.database.mongo import MongoDatabase
+from alpaca_partner_backend.database.mongo import MongoDatabase
 
 
 @lru_cache
