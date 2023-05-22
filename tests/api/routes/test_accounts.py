@@ -95,7 +95,8 @@ def test_get_account_by_email(
     )
     num_api_call_mocked = 2
     get_response = mock_api_client.get(
-        url=ROUTER + f"/{mock_alpaca_account_request.contact.email_address}",
+        url=ROUTER,
+        params={"email": mock_alpaca_account_request.contact.email_address},
     )
     assert httpx.codes.is_success(get_response.status_code)
     account = AccountJson(**get_response.json())
@@ -111,7 +112,8 @@ def test_integration_get_post_accounts(
 ) -> None:
     """Test POST method on the accounts router."""
     get_response = mock_api_client.get(
-        url=ROUTER + f"/{mock_alpaca_account_request.contact.email_address}",
+        url=ROUTER,
+        params={"email": mock_alpaca_account_request.contact.email_address},
     )
     post_response = mock_api_client.post(
         url=ROUTER,
@@ -120,7 +122,8 @@ def test_integration_get_post_accounts(
     is_account_created = httpx.codes.is_success(post_response.status_code)
     if httpx.codes.is_success(get_response.status_code):
         assert not is_account_created
-        assert post_response.status_code == httpx.codes.CONFLICT.value
+        assert httpx.codes.is_error(post_response.status_code)
+        assert post_response.status_code == httpx.codes.UNPROCESSABLE_ENTITY.value
     else:
         assert is_account_created
     _account = (

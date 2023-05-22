@@ -8,9 +8,10 @@ from jose import JWTError, jwt
 from pydantic import EmailStr
 
 from alpaca_partner_backend.api.common import get_broker_client
+from alpaca_partner_backend.api.parsers import parse_user_to_output
 from alpaca_partner_backend.database import MongoDatabase, get_db
 from alpaca_partner_backend.enums.api import Routers
-from alpaca_partner_backend.models import AuthCredentials, Token, User
+from alpaca_partner_backend.models import AuthCredentials, Token, User, UserOut
 from alpaca_partner_backend.settings import SETTINGS
 from alpaca_partner_backend.utils.security import create_access_token
 
@@ -57,6 +58,16 @@ def get_current_user(
             headers=_headers,
         )
     return user
+
+
+@router.post("/register")
+def register(
+    credentials: AuthCredentials,
+    database: MongoDatabase = Depends(get_db),
+) -> UserOut:
+    """Endpoint to log-in and get the JWT access token."""
+    database.create_user(auth_credentials=credentials)
+    return parse_user_to_output(get_current_user(database=database, _email=credentials.email))
 
 
 @router.post("/login")

@@ -198,6 +198,12 @@ ignore = ["DEP003"]
     [[tool.poe.tasks.test.sequence]]
     cmd = "coverage xml"
   
+  [tool.poe.tasks.format]
+  help = "Format this package with black"
+
+    [[tool.poe.tasks.format.sequence]]
+    cmd = "black . --line-length 100"
+
   [tool.poe.tasks.clean]
   help = "Clean this package dependencies"
 

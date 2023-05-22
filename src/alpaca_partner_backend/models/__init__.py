@@ -1,20 +1,20 @@
 """Base models package."""
-from alpaca_partner_backend.models.api import AccountJson
+from alpaca_partner_backend.models.api import AccountJson, AccountTrading, CreateAccountRequest
 from alpaca_partner_backend.models.database import DatabaseDocument
 from alpaca_partner_backend.models.user import (
     AuthCredentials,
-    CreateAccountRequest,
     Token,
     User,
-    UserCreate,
+    UserOut,
 )
 
 __all__ = [
+    "AccountTrading",
     "AuthCredentials",
     "CreateAccountRequest",
     "DatabaseDocument",
     "AccountJson",
     "Token",
     "User",
-    "UserCreate",
+    "UserOut",
 ]

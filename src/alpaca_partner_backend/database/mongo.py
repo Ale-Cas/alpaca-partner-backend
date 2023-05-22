@@ -1,12 +1,13 @@
 """MongoDB client implementation class for the broker backend."""
-from alpaca_partner_backend.models import User, UserCreate
-from alpaca_partner_backend.settings import SETTINGS
-from alpaca_partner_backend.utils.security import get_password_hash, verify_password
 from fastapi import HTTPException, status
 from pydantic import EmailStr
 from pymongo import MongoClient
 from pymongo.collection import Collection, InsertOneResult
 from pymongo.database import Database
+
+from alpaca_partner_backend.models import AuthCredentials, User
+from alpaca_partner_backend.settings import SETTINGS
+from alpaca_partner_backend.utils.security import get_password_hash, verify_password
 
 
 class MongoDatabase:
@@ -27,11 +28,11 @@ class MongoDatabase:
         self.users_collection: Collection = self.database["users"]
         self.users_collection.create_index("email", unique=True)
 
-    def create_user(self, user_to_create: UserCreate) -> InsertOneResult:
+    def create_user(self, auth_credentials: AuthCredentials) -> InsertOneResult:
         """Create a new user with the email and the hash of the password provided."""
         return self.users_collection.insert_one(
-            UserCreate(
-                email=user_to_create.email, password=get_password_hash(user_to_create.password)
+            AuthCredentials(
+                email=auth_credentials.email, password=get_password_hash(auth_credentials.password)
             ).dict()
         )
 

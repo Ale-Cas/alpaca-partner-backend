@@ -11,7 +11,7 @@ from requests_mock import Mocker
 from alpaca_partner_backend.api.main import app
 from alpaca_partner_backend.database import get_db
 from alpaca_partner_backend.database.mongo import MongoDatabase
-from alpaca_partner_backend.models import CreateAccountRequest, UserCreate
+from alpaca_partner_backend.models import AuthCredentials, CreateAccountRequest
 from tests.api import conftest
 
 # Constants:
@@ -20,9 +20,9 @@ TEST_PASSWORD = "abc123"
 
 
 @pytest.fixture()
-def mock_user() -> UserCreate:
+def mock_user() -> AuthCredentials:
     """Fixture for mocking a user creation."""
-    return UserCreate(email=TEST_EMAIL, password=TEST_PASSWORD)
+    return AuthCredentials(email=TEST_EMAIL, password=TEST_PASSWORD)
 
 
 @pytest.fixture()
@@ -50,7 +50,7 @@ def mock_database() -> MongoDatabase:
 @pytest.fixture()
 def mock_database_with_user(
     mock_database: MongoDatabase,
-    mock_user: UserCreate,
+    mock_user: AuthCredentials,
 ) -> MongoDatabase:
     """
     Fixture for mocking the MongoDB database host.
@@ -58,7 +58,7 @@ def mock_database_with_user(
     Uses the client from mongomock to create a fake client.
     """
     insert_result = mock_database.create_user(
-        user_to_create=mock_user,
+        auth_credentials=mock_user,
     )
     assert insert_result.acknowledged
     assert insert_result.inserted_id

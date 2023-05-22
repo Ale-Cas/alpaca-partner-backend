@@ -16,3 +16,6 @@ class DatabaseDocument(BaseModel):
         use_enum_values = True
         arbitrary_types_allowed = True
         extra = Extra.forbid
+        json_encoders = {
+            ObjectId: lambda _id: str(_id),
+        }

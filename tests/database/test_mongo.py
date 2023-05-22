@@ -1,7 +1,7 @@
 """Test suite for the mongo module."""
 
 from alpaca_partner_backend.database import MongoDatabase, get_db
-from alpaca_partner_backend.models.user import UserCreate
+from alpaca_partner_backend.models.user import AuthCredentials
 
 
 def test_get_db() -> None:
@@ -10,15 +10,15 @@ def test_get_db() -> None:
     assert isinstance(database, MongoDatabase)
 
 
-# def test_create_user(database: MongoDatabase, mock_user: UserCreate) -> None:
+# def test_create_user(database: MongoDatabase, mock_user: AuthCredentials) -> None:
 #     """Test create_user method."""
-#     insert_result = database.create_user(user_to_create=mock_user)
+#     insert_result = database.create_user(auth_credentials=mock_user)
 #     assert insert_result.acknowledged
 #     assert insert_result.inserted_id
 
 
-def test_mock_create_user(mock_database: MongoDatabase, mock_user: UserCreate) -> None:
+def test_mock_create_user(mock_database: MongoDatabase, mock_user: AuthCredentials) -> None:
     """Test create_user method."""
-    insert_result = mock_database.create_user(user_to_create=mock_user)
+    insert_result = mock_database.create_user(auth_credentials=mock_user)
     assert insert_result.acknowledged
     assert insert_result.inserted_id

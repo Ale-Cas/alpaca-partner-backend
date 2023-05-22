@@ -3,15 +3,21 @@
 import logging
 
 from alpaca.broker import Account
-from alpaca.common.exceptions import APIError as BrokerAPIError
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import EmailStr
 
+from alpaca_partner_backend.api import parsers
 from alpaca_partner_backend.api.common import get_broker_client
-from alpaca_partner_backend.api.parsers import parse_account_to_jsonable
+from alpaca_partner_backend.api.routes.users import get_current_user
 from alpaca_partner_backend.database import MongoDatabase, get_db
 from alpaca_partner_backend.enums import Routers
-from alpaca_partner_backend.models import AccountJson, CreateAccountRequest, UserCreate
+from alpaca_partner_backend.models import (
+    AccountJson,
+    AccountTrading,
+    AuthCredentials,
+    CreateAccountRequest,
+    User,
+)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -42,26 +48,49 @@ def create_account(
         The account that has been created.
     """
     insert_result = database.create_user(
-        UserCreate(
+        AuthCredentials(
             email=account_request.contact.email_address,
             password=account_request.password,
         )
     )
     log.info("User %s created", insert_result.inserted_id)
     log.info("Account creation request.")
-    log.info(account_request.dict(exclude_none=True))
-    try:
-        account = broker_client.create_account(account_request)
-    except BrokerAPIError as broker_api_error:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"An account with the same email address {account_request.contact.email_address} already exists.",
-        ) from broker_api_error
+    account = broker_client.create_account(account_request)
     assert isinstance(account, Account), "The account has not being parsed for pydantic validation."
-    return parse_account_to_jsonable(account)
+    return parsers.parse_account_to_jsonable(account)
 
 
-@router.get("/{email}")
+def _get_account_id_by_email(
+    email: EmailStr,
+) -> str:
+    """
+    Get the account ID with a specific email.
+
+    Parameters
+    ----------
+    `email`: EmailStr
+        the email of the requested account.
+
+    Raises
+    ------
+    `HTTPException`:
+        Raise 404 if no account with that email address is found.
+
+    Returns
+    -------
+    `str`:
+        the Alpaca account ID with that email.
+    """
+    accounts = broker_client.get(f"/accounts?query={str(email)}")
+    if not accounts:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email address {email} not found",
+        )
+    return accounts[0].get("id")
+
+
+@router.get("/")
 def get_account_by_email(
     email: EmailStr,
 ) -> AccountJson:
@@ -70,27 +99,34 @@ def get_account_by_email(
 
     Parameters
     ----------
-    `account_request`: CreateAccountRequest
-        The parameters for the account request.
+    `email`: EmailStr
+        the email of the requested account.
 
     Returns
     -------
-    AccountJson:
-        The account that has been created.
+    `AccountJson`:
+        the Alpaca account with that email.
     """
-    accounts = broker_client.get(f"/accounts?query={str(email)}")
-    if not accounts:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with email address {email} not found",
-        )
-    account_id = accounts[0].get("id")
-    assert isinstance(account_id, str)
-    try:
-        account = broker_client.get_account_by_id(account_id=account_id)
-    except BrokerAPIError as broker_api_error:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with ID {account_id} not found.",
-        ) from broker_api_error
-    return parse_account_to_jsonable(account)
+    account_id = _get_account_id_by_email(email)
+    account = broker_client.get_account_by_id(account_id=account_id)
+    return parsers.parse_account_to_jsonable(account)
+
+
+@router.get("/trading")
+def get_account_trading_info(user: User = Depends(get_current_user)) -> AccountTrading:
+    """
+    Get the account trading information for a specific account ID.
+
+    Parameters
+    ----------
+    `account_id`: str
+        the ID of the account. Gets validated as UUID.
+
+    Returns
+    -------
+    `AccountTrading`:
+        the trading information for that account.
+    """
+    return parsers.parse_account_to_trading(
+        broker_client.get_trade_account_by_id(account_id=_get_account_id_by_email(user.email))
+    )
