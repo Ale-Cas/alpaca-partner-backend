@@ -13,32 +13,32 @@ ROUTER = Routers.USERS.value
 
 def test_get_current_user(
     database: MongoDatabase,
-    mock_user: AuthCredentials,
+    mock_credentials: AuthCredentials,
 ) -> None:
     """Test create_user method."""
-    user = get_current_user(database=database, _email=mock_user.email)
+    user = get_current_user(database=database, _email=mock_credentials.email)
     assert isinstance(user, User)
 
 
-def test_login(mock_api_client_with_user: TestClient, mock_user: AuthCredentials) -> None:
+def test_login(mock_api_client_with_user: TestClient, mock_credentials: AuthCredentials) -> None:
     """Test POST method on the accounts router."""
     response = mock_api_client_with_user.post(
         url=ROUTER + "/login",
         json=AuthCredentials(
-            email=mock_user.email,
-            password=mock_user.password,
+            email=mock_credentials.email,
+            password=mock_credentials.password,
         ).dict(),
     )
     assert httpx.codes.is_success(response.status_code)
 
 
-def test_register(mock_api_client: TestClient, mock_user: AuthCredentials) -> None:
+def test_register(mock_api_client: TestClient, mock_credentials: AuthCredentials) -> None:
     """Test POST method on the accounts router."""
     response = mock_api_client.post(
         url=ROUTER + "/register",
         json=AuthCredentials(
-            email=mock_user.email,
-            password=mock_user.password,
+            email=mock_credentials.email,
+            password=mock_credentials.password,
         ).dict(),
     )
     assert httpx.codes.is_success(response.status_code)

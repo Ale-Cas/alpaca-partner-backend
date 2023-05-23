@@ -79,8 +79,8 @@ class AccountTrading(BaseModel):
     daytrade_count: int
 
 
-class AssetSearch(BaseModel):
-    """Asset basic info for the search."""
+class JournalRequestBody(BaseModel):
+    """Journal request body."""
 
-    symbol: str
-    name: str
+    to_user: bool
+    amount: float

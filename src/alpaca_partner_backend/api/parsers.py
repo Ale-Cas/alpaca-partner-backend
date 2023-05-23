@@ -1,4 +1,5 @@
 """Parse models for the API endpoints."""
+import pandas as pd
 from alpaca.broker import Account, TradeAccount
 
 from alpaca_partner_backend.models import AccountJson, AccountTrading, User, UserOut
@@ -35,3 +36,8 @@ def parse_user_to_output(user: User) -> UserOut:
     Takes care of not returning passwords or IDs.
     """
     return UserOut(email=user.email)
+
+
+def parse_df_to_list(df: pd.DataFrame) -> list[list[str]]:
+    """Parse a dataframe to a list of its headers and values."""
+    return [df.columns.to_list(), *df.values.tolist()]

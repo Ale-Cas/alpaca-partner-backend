@@ -6,15 +6,16 @@ import traceback
 
 import coloredlogs
 from alpaca.common.exceptions import APIError as BrokerAPIError
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from pymongo.errors import DuplicateKeyError
 
-from alpaca_partner_backend.api.routes import accounts, assets, users
-
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
+from alpaca_partner_backend.api.routes import accounts, assets, funding, prices, users
+from alpaca_partner_backend.database import MongoDatabase, get_db
+from alpaca_partner_backend.models import Token
+from alpaca_partner_backend.utils.security import create_access_token
 
 app = FastAPI(debug=True)
 
@@ -34,6 +35,8 @@ app.add_middleware(
 
 app.include_router(accounts.router)
 app.include_router(assets.router)
+app.include_router(funding.router)
+app.include_router(prices.router)
 app.include_router(users.router)
 
 
@@ -82,10 +85,26 @@ def startup_event() -> None:
     # Reset testing overrides before running the server
     app.dependency_overrides = {}
     # Remove all handlers associated with the root logger object.
-    # for handler in logging.root.handlers:
-    # logging.root.removeHandler(handler)
+    for handler in logging.root.handlers:
+        logging.root.removeHandler(handler)
     # Add coloredlogs' coloured StreamHandler to the root logger.
     coloredlogs.install()
+
+
+@app.post("/token")
+def login_with_request_form(
+    database: MongoDatabase = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
+) -> Token:
+    """Endpoint to log-in and get the JWT access token."""
+    user = database.authenticate_user(
+        email=form_data.username,
+        password=form_data.password,
+    )
+    access_token = create_access_token(
+        data={"sub": user.email},
+    )
+
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @app.get("/")

@@ -1,8 +1,11 @@
 """Accounts endpoint router."""
 
 import logging
+from typing import Any
 
-from alpaca.broker import Account
+import pandas as pd
+from alpaca.broker import Account, GetAccountActivitiesRequest
+from alpaca.trading import GetPortfolioHistoryRequest, PortfolioHistory
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import EmailStr
 
@@ -81,19 +84,24 @@ def _get_account_id_by_email(
     `str`:
         the Alpaca account ID with that email.
     """
-    accounts = broker_client.get(f"/accounts?query={str(email)}")
+    _email = str(email)
+    _not_found_error = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User with email address {_email} not found",
+    )
+    accounts = broker_client.get(f"/accounts?query={_email}&entities=contact")
     if not accounts:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with email address {email} not found",
-        )
-    return accounts[0].get("id")
+        raise _not_found_error
+    # iterate over the accounts that match the query to find
+    # the account with the same email address
+    for account in accounts:
+        if account["contact"]["email_address"] == _email:
+            return account["id"]
+    raise _not_found_error
 
 
 @router.get("/")
-def get_account_by_email(
-    email: EmailStr,
-) -> AccountJson:
+def get_account_info(user: User = Depends(get_current_user)) -> AccountJson:
     """
     Get the account with a specific email.
 
@@ -107,7 +115,7 @@ def get_account_by_email(
     `AccountJson`:
         the Alpaca account with that email.
     """
-    account_id = _get_account_id_by_email(email)
+    account_id = _get_account_id_by_email(user.email)
     account = broker_client.get_account_by_id(account_id=account_id)
     return parsers.parse_account_to_jsonable(account)
 
@@ -117,11 +125,6 @@ def get_account_trading_info(user: User = Depends(get_current_user)) -> AccountT
     """
     Get the account trading information for a specific account ID.
 
-    Parameters
-    ----------
-    `account_id`: str
-        the ID of the account. Gets validated as UUID.
-
     Returns
     -------
     `AccountTrading`:
@@ -130,3 +133,72 @@ def get_account_trading_info(user: User = Depends(get_current_user)) -> AccountT
     return parsers.parse_account_to_trading(
         broker_client.get_trade_account_by_id(account_id=_get_account_id_by_email(user.email))
     )
+
+
+@router.get("/portfolio/history")
+def get_portfolio_history(
+    user: User = Depends(get_current_user),
+    timeperiod: str = "1M",
+) -> list[list[Any]]:
+    """
+    Get the account trading information for a specific account ID.
+
+    Parameters
+    ----------
+    `timeperiod`: (Optional[str])
+        the duration of the data in number + unit, such as 1D.
+        Unit can be D for day, W for week, M for month and A for year.
+        Defaults to 1M.
+
+    Returns
+    -------
+    `list[EquityEOD]`:
+        the list of equity values at end of each day for that account.
+    """
+    _acct_id = _get_account_id_by_email(user.email)
+    ptf_history = broker_client.get_portfolio_history_for_account(
+        account_id=_acct_id,
+        history_filter=GetPortfolioHistoryRequest(
+            timeframe="1D",
+            period=timeperiod,
+        ),
+    )
+    assert isinstance(ptf_history, PortfolioHistory)
+    acct_trading = broker_client.get_trade_account_by_id(account_id=_acct_id)
+    ptf_history_df = pd.DataFrame(
+        {
+            "day": ptf_history.timestamp,
+            "equity": ptf_history.equity,
+        }
+    )
+    # replace today's equity from portfolio history
+    # with the account current equity
+    ptf_history_df.iloc[-1, 1] = float(acct_trading.equity)
+    ptf_history_df["day"] = pd.to_datetime(ptf_history_df["day"], unit="s").dt.strftime("%Y-%m-%d")
+    return parsers.parse_df_to_list(ptf_history_df)
+
+
+@router.get("/activities")
+def get_account_activities(
+    user: User = Depends(get_current_user),
+) -> list[Any]:
+    """
+    Get the account trading information for a specific account ID.
+
+    Parameters
+    ----------
+    `timeperiod`: (Optional[str])
+        the duration of the data in number + unit, such as 1D.
+        Unit can be D for day, W for week, M for month and A for year.
+        Defaults to 1M.
+
+    Returns
+    -------
+    `list[EquityEOD]`:
+        the list of equity values at end of each day for that account.
+    """
+    activities = broker_client.get_account_activities(
+        activity_filter=GetAccountActivitiesRequest(account_id=_get_account_id_by_email(user.email))
+    )
+    assert isinstance(activities, list)
+    return activities

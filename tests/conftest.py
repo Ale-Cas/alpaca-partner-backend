@@ -5,13 +5,16 @@ import typing
 import mongomock
 import pytest
 from alpaca.broker import Account
+from bson import ObjectId
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
 
 from alpaca_partner_backend.api.main import app
+from alpaca_partner_backend.api.routes.users import get_current_user
 from alpaca_partner_backend.database import get_db
 from alpaca_partner_backend.database.mongo import MongoDatabase
 from alpaca_partner_backend.models import AuthCredentials, CreateAccountRequest
+from alpaca_partner_backend.models.user import User
 from tests.api import conftest
 
 # Constants:
@@ -20,7 +23,7 @@ TEST_PASSWORD = "abc123"
 
 
 @pytest.fixture()
-def mock_user() -> AuthCredentials:
+def mock_credentials() -> AuthCredentials:
     """Fixture for mocking a user creation."""
     return AuthCredentials(email=TEST_EMAIL, password=TEST_PASSWORD)
 
@@ -50,7 +53,7 @@ def mock_database() -> MongoDatabase:
 @pytest.fixture()
 def mock_database_with_user(
     mock_database: MongoDatabase,
-    mock_user: AuthCredentials,
+    mock_credentials: AuthCredentials,
 ) -> MongoDatabase:
     """
     Fixture for mocking the MongoDB database host.
@@ -58,7 +61,7 @@ def mock_database_with_user(
     Uses the client from mongomock to create a fake client.
     """
     insert_result = mock_database.create_user(
-        auth_credentials=mock_user,
+        auth_credentials=mock_credentials,
     )
     assert insert_result.acknowledged
     assert insert_result.inserted_id
@@ -72,8 +75,14 @@ def mock_api_client(mock_database: MongoDatabase) -> TestClient:
 
     Uses the client from mongomock to create a fake client.
     """
+    app.dependency_overrides = {}
     app.dependency_overrides[get_db] = lambda: mock_database
     return TestClient(app=app)
+
+
+def get_mock_current_user() -> User:
+    """Mock the get current user dependency."""
+    return User(_id=ObjectId(), email=TEST_EMAIL, password=TEST_PASSWORD)
 
 
 @pytest.fixture()
@@ -85,7 +94,9 @@ def mock_api_client_with_user(
 
     Uses the client from mongomock to create a fake client.
     """
+    app.dependency_overrides = {}
     app.dependency_overrides[get_db] = lambda: mock_database_with_user
+    app.dependency_overrides[get_current_user] = get_mock_current_user
     return TestClient(app=app)
 
 

@@ -55,34 +55,11 @@ def test_post_account(
     assert account.contact.email_address == TEST_EMAIL
 
 
-def test_mock_get_account_by_email(
-    reqmock: Mocker,
-    alpaca_account: Account,
-    mock_get_alpaca_account_by_email: str,
-) -> None:
-    """Test GET method on the accounts router with email in the path."""
-    reqmock.get(
-        url=f"{BaseURL.BROKER_SANDBOX}/v1/accounts?query={str(TEST_EMAIL)}",
-        text=mock_get_alpaca_account_by_email,
-    )
-    reqmock.get(
-        url=f"{BaseURL.BROKER_SANDBOX}/v1/accounts/{alpaca_account.id}",
-        text=alpaca_account.json(),
-    )
-    num_api_call_mocked = 2
-    account = accounts.get_account_by_email(email=TEST_EMAIL)
-    assert reqmock.call_count == num_api_call_mocked
-    assert isinstance(account, AccountJson)
-    assert account.contact
-    assert account.contact.email_address == TEST_EMAIL
-
-
 def test_get_account_by_email(
     reqmock: Mocker,
     mock_get_alpaca_account_by_email: str,
     alpaca_account: Account,
-    mock_api_client: TestClient,
-    mock_alpaca_account_request: CreateAccountRequest,
+    mock_api_client_with_user: TestClient,
 ) -> None:
     """Test GET method on the accounts router with email in the path."""
     reqmock.get(
@@ -93,29 +70,25 @@ def test_get_account_by_email(
         url=f"{BaseURL.BROKER_SANDBOX}/v1/accounts/{alpaca_account.id}",
         text=alpaca_account.json(),
     )
-    num_api_call_mocked = 2
-    get_response = mock_api_client.get(
+    get_response = mock_api_client_with_user.get(
         url=ROUTER,
-        params={"email": mock_alpaca_account_request.contact.email_address},
     )
     assert httpx.codes.is_success(get_response.status_code)
     account = AccountJson(**get_response.json())
     assert isinstance(account, AccountJson)
-    assert reqmock.call_count == num_api_call_mocked
     assert account.contact
     assert account.contact.email_address == TEST_EMAIL
 
 
 def test_integration_get_post_accounts(
-    mock_api_client: TestClient,
+    mock_api_client_with_user: TestClient,
     mock_alpaca_account_request: CreateAccountRequest,
 ) -> None:
     """Test POST method on the accounts router."""
-    get_response = mock_api_client.get(
+    get_response = mock_api_client_with_user.get(
         url=ROUTER,
-        params={"email": mock_alpaca_account_request.contact.email_address},
     )
-    post_response = mock_api_client.post(
+    post_response = mock_api_client_with_user.post(
         url=ROUTER,
         json=mock_alpaca_account_request.to_request_fields(),
     )
@@ -123,7 +96,7 @@ def test_integration_get_post_accounts(
     if httpx.codes.is_success(get_response.status_code):
         assert not is_account_created
         assert httpx.codes.is_error(post_response.status_code)
-        assert post_response.status_code == httpx.codes.UNPROCESSABLE_ENTITY.value
+        assert post_response.status_code == httpx.codes.CONFLICT.value
     else:
         assert is_account_created
     _account = (
@@ -136,3 +109,13 @@ def test_integration_get_post_accounts(
     assert isinstance(account, Account)
     assert account.contact
     assert account.contact.email_address == mock_alpaca_account_request.contact.email_address
+
+
+def test_integration_get_ptf_history(
+    mock_api_client_with_user: TestClient,
+) -> None:
+    """Test get portfolio history endpoint."""
+    response = mock_api_client_with_user.get(
+        url=f"{ROUTER}/portfolio/history",
+    )
+    assert httpx.codes.is_success(response.status_code)

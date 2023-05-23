@@ -10,15 +10,15 @@ def test_get_db() -> None:
     assert isinstance(database, MongoDatabase)
 
 
-# def test_create_user(database: MongoDatabase, mock_user: AuthCredentials) -> None:
+# def test_create_user(database: MongoDatabase, mock_credentials: AuthCredentials) -> None:
 #     """Test create_user method."""
-#     insert_result = database.create_user(auth_credentials=mock_user)
+#     insert_result = database.create_user(auth_credentials=mock_credentials)
 #     assert insert_result.acknowledged
 #     assert insert_result.inserted_id
 
 
-def test_mock_create_user(mock_database: MongoDatabase, mock_user: AuthCredentials) -> None:
+def test_mock_create_user(mock_database: MongoDatabase, mock_credentials: AuthCredentials) -> None:
     """Test create_user method."""
-    insert_result = mock_database.create_user(auth_credentials=mock_user)
+    insert_result = mock_database.create_user(auth_credentials=mock_credentials)
     assert insert_result.acknowledged
     assert insert_result.inserted_id
