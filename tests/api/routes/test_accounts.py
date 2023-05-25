@@ -5,8 +5,6 @@ from alpaca.common.enums import BaseURL
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
 
-from alpaca_partner_backend.api.routes import accounts
-from alpaca_partner_backend.database.mongo import MongoDatabase
 from alpaca_partner_backend.enums import Routers
 from alpaca_partner_backend.models import AccountJson
 from tests.conftest import TEST_EMAIL
@@ -16,7 +14,7 @@ ROUTER = Routers.ACCOUNTS.value
 
 def test_mock_post_accounts(
     reqmock: Mocker,
-    mock_database: MongoDatabase,
+    mock_api_client: TestClient,
     mock_alpaca_account: str,
     mock_alpaca_account_request: CreateAccountRequest,
 ) -> None:
@@ -25,9 +23,12 @@ def test_mock_post_accounts(
         url=f"{BaseURL.BROKER_SANDBOX}/v1/accounts",
         text=mock_alpaca_account,
     )
-    account = accounts.create_account(
-        account_request=mock_alpaca_account_request, database=mock_database
+    post_response = mock_api_client.post(
+        url=ROUTER,
+        json=mock_alpaca_account_request.to_request_fields(),
     )
+    assert httpx.codes.is_success(post_response.status_code)
+    account = AccountJson(**post_response.json())
     assert isinstance(account, AccountJson)
     assert account.contact
     assert account.contact.email_address == mock_alpaca_account_request.contact.email_address
@@ -117,5 +118,15 @@ def test_integration_get_ptf_history(
     """Test get portfolio history endpoint."""
     response = mock_api_client_with_user.get(
         url=f"{ROUTER}/portfolio/history",
+    )
+    assert httpx.codes.is_success(response.status_code)
+
+
+def test_account_activities(
+    mock_api_client_with_user: TestClient,
+) -> None:
+    """Test get portfolio history endpoint."""
+    response = mock_api_client_with_user.get(
+        url=f"{ROUTER}/activities",
     )
     assert httpx.codes.is_success(response.status_code)

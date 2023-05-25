@@ -1,10 +1,21 @@
 """Configurations, mocks, constants and fixtures that are used in the tests."""
 import json
 import typing
+from datetime import datetime
+from uuid import uuid4
 
 import mongomock
 import pytest
-from alpaca.broker import Account
+from alpaca.broker import Account, Order
+from alpaca.trading import (
+    AssetClass,
+    OrderClass,
+    OrderRequest,
+    OrderSide,
+    OrderStatus,
+    OrderType,
+    TimeInForce,
+)
 from bson import ObjectId
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
@@ -145,6 +156,51 @@ def alpaca_account(mock_alpaca_account_request: CreateAccountRequest) -> Account
 def mock_alpaca_account(alpaca_account: Account) -> str:
     """Fake Alpaca broker account in json format for reqmock."""
     return alpaca_account.json()
+
+
+@pytest.fixture()
+def mock_order_request() -> OrderRequest:
+    """Fake order for reqmock."""
+    return OrderRequest(
+        symbol="AAPL",
+        qty=1,
+        side=OrderSide.BUY,
+        type=OrderType.MARKET,
+        order_type=OrderType.MARKET,
+        time_in_force=TimeInForce.DAY,
+    )
+
+
+@pytest.fixture()
+def mock_order(mock_order_request: OrderRequest) -> Order:
+    """Fake order for reqmock."""
+    return Order(
+        id=uuid4(),
+        client_order_id=str(uuid4()),
+        asset_class=AssetClass.US_EQUITY,
+        order_class=OrderClass.SIMPLE,
+        extended_hours=False,
+        order_type=OrderType.MARKET,
+        commission=0,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+        submitted_at=datetime.utcnow(),
+        asset_id=uuid4(),
+        status=OrderStatus.NEW,
+        **mock_order_request.dict(exclude_none=True),
+    )
+
+
+@pytest.fixture()
+def mock_order_json(mock_order: Order) -> str:
+    """Fake order in json format for reqmock."""
+    return mock_order.json()
+
+
+@pytest.fixture()
+def mock_get_orders_json(mock_order: Order) -> str:
+    """Fake orders in json format for reqmock."""
+    return json.dumps([json.loads(mock_order.json())])
 
 
 @pytest.fixture()

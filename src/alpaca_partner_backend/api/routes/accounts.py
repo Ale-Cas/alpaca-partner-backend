@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 import pandas as pd
-from alpaca.broker import Account, GetAccountActivitiesRequest
+from alpaca.broker import Account, BrokerClient, GetAccountActivitiesRequest, TradeAccount
 from alpaca.trading import GetPortfolioHistoryRequest, PortfolioHistory
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import EmailStr
@@ -21,6 +21,7 @@ from alpaca_partner_backend.models import (
     CreateAccountRequest,
     User,
 )
+from alpaca_partner_backend.models.api import Activity
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -30,13 +31,12 @@ router = APIRouter(
     tags=[Routers.ACCOUNTS.name],
 )
 
-broker_client = get_broker_client()
-
 
 @router.post("/")
 def create_account(
     account_request: CreateAccountRequest,
     database: MongoDatabase = Depends(get_db),
+    broker_client: BrokerClient = Depends(get_broker_client),
 ) -> AccountJson:
     """Create an Alpaca account from the account request.
 
@@ -65,6 +65,7 @@ def create_account(
 
 def _get_account_id_by_email(
     email: EmailStr,
+    broker_client: BrokerClient,
 ) -> str:
     """
     Get the account ID with a specific email.
@@ -101,7 +102,10 @@ def _get_account_id_by_email(
 
 
 @router.get("/")
-def get_account_info(user: User = Depends(get_current_user)) -> AccountJson:
+def get_account_info(
+    user: User = Depends(get_current_user),
+    broker_client: BrokerClient = Depends(get_broker_client),
+) -> AccountJson:
     """
     Get the account with a specific email.
 
@@ -115,13 +119,16 @@ def get_account_info(user: User = Depends(get_current_user)) -> AccountJson:
     `AccountJson`:
         the Alpaca account with that email.
     """
-    account_id = _get_account_id_by_email(user.email)
+    account_id = _get_account_id_by_email(user.email, broker_client=broker_client)
     account = broker_client.get_account_by_id(account_id=account_id)
     return parsers.parse_account_to_jsonable(account)
 
 
 @router.get("/trading")
-def get_account_trading_info(user: User = Depends(get_current_user)) -> AccountTrading:
+def get_account_trading_info(
+    user: User = Depends(get_current_user),
+    broker_client: BrokerClient = Depends(get_broker_client),
+) -> AccountTrading:
     """
     Get the account trading information for a specific account ID.
 
@@ -131,14 +138,17 @@ def get_account_trading_info(user: User = Depends(get_current_user)) -> AccountT
         the trading information for that account.
     """
     return parsers.parse_account_to_trading(
-        broker_client.get_trade_account_by_id(account_id=_get_account_id_by_email(user.email))
+        broker_client.get_trade_account_by_id(
+            account_id=_get_account_id_by_email(user.email, broker_client=broker_client)
+        )
     )
 
 
 @router.get("/portfolio/history")
 def get_portfolio_history(
-    user: User = Depends(get_current_user),
     timeperiod: str = "1M",
+    user: User = Depends(get_current_user),
+    broker_client: BrokerClient = Depends(get_broker_client),
 ) -> list[list[Any]]:
     """
     Get the account trading information for a specific account ID.
@@ -155,7 +165,7 @@ def get_portfolio_history(
     `list[EquityEOD]`:
         the list of equity values at end of each day for that account.
     """
-    _acct_id = _get_account_id_by_email(user.email)
+    _acct_id = _get_account_id_by_email(user.email, broker_client=broker_client)
     ptf_history = broker_client.get_portfolio_history_for_account(
         account_id=_acct_id,
         history_filter=GetPortfolioHistoryRequest(
@@ -165,6 +175,7 @@ def get_portfolio_history(
     )
     assert isinstance(ptf_history, PortfolioHistory)
     acct_trading = broker_client.get_trade_account_by_id(account_id=_acct_id)
+    assert isinstance(acct_trading, TradeAccount)
     ptf_history_df = pd.DataFrame(
         {
             "day": ptf_history.timestamp,
@@ -173,6 +184,7 @@ def get_portfolio_history(
     )
     # replace today's equity from portfolio history
     # with the account current equity
+    assert acct_trading.equity
     ptf_history_df.iloc[-1, 1] = float(acct_trading.equity)
     ptf_history_df["day"] = pd.to_datetime(ptf_history_df["day"], unit="s").dt.strftime("%Y-%m-%d")
     return parsers.parse_df_to_list(ptf_history_df)
@@ -181,7 +193,8 @@ def get_portfolio_history(
 @router.get("/activities")
 def get_account_activities(
     user: User = Depends(get_current_user),
-) -> list[Any]:
+    broker_client: BrokerClient = Depends(get_broker_client),
+) -> list[Activity]:
     """
     Get the account trading information for a specific account ID.
 
@@ -198,7 +211,9 @@ def get_account_activities(
         the list of equity values at end of each day for that account.
     """
     activities = broker_client.get_account_activities(
-        activity_filter=GetAccountActivitiesRequest(account_id=_get_account_id_by_email(user.email))
+        activity_filter=GetAccountActivitiesRequest(
+            account_id=_get_account_id_by_email(user.email, broker_client=broker_client)
+        )
     )
     assert isinstance(activities, list)
-    return activities
+    return parsers.parse_activities(activities)

@@ -3,9 +3,10 @@
 import logging
 from functools import lru_cache
 
+from alpaca.broker import BrokerClient
 from alpaca.common.exceptions import APIError
 from alpaca.trading import Asset, AssetClass, AssetExchange, AssetStatus, GetAssetsRequest
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from alpaca_partner_backend.api.common import get_broker_client
 from alpaca_partner_backend.enums import Routers
@@ -17,11 +18,11 @@ router = APIRouter(
     prefix=Routers.ASSETS.value,
     tags=[Routers.ASSETS.name],
 )
-broker_client = get_broker_client()
 
 
 @lru_cache
 def _cache_broker_api_call(
+    broker_client: BrokerClient,
     status: AssetStatus | None = None,
     asset_class: AssetClass | None = None,
     exchange: AssetExchange | None = None,
@@ -40,7 +41,8 @@ def _cache_broker_api_call(
         )
     )
     assert isinstance(assets, list)
-    return assets
+    # filter out assets that are non tradable and not fractionable
+    return [a for a in assets if a.tradable is True and a.fractionable is True]
 
 
 @router.get("/")
@@ -48,6 +50,7 @@ def get_assets(
     status: AssetStatus | None = AssetStatus.ACTIVE,
     asset_class: AssetClass | None = None,
     exchange: AssetExchange | None = None,
+    broker_client: BrokerClient = Depends(get_broker_client),
 ) -> list[Asset]:
     """
     Get the assets that match the filters.
@@ -64,6 +67,7 @@ def get_assets(
         the assets that match the filters.
     """
     return _cache_broker_api_call(
+        broker_client=broker_client,
         status=status,
         asset_class=asset_class,
         exchange=exchange,
@@ -75,6 +79,7 @@ def get_symbols(
     status: AssetStatus | None = None,
     asset_class: AssetClass | None = None,
     exchange: AssetExchange | None = None,
+    broker_client: BrokerClient = Depends(get_broker_client),
 ) -> list[str]:
     """
     Get the account with a specific email.
@@ -93,6 +98,7 @@ def get_symbols(
     return [
         a.symbol
         for a in _cache_broker_api_call(
+            broker_client=broker_client,
             status=status,
             asset_class=asset_class,
             exchange=exchange,
@@ -101,7 +107,10 @@ def get_symbols(
 
 
 @router.get("/symbols/{symbol}")
-def get_asset_by_symbol(symbol: str) -> Asset:
+def get_asset_by_symbol(
+    symbol: str,
+    broker_client: BrokerClient = Depends(get_broker_client),
+) -> Asset:
     """
     Get the account with a specific email.
 
@@ -132,6 +141,7 @@ def get_names(
     status: AssetStatus | None = None,
     asset_class: AssetClass | None = None,
     exchange: AssetExchange | None = None,
+    broker_client: BrokerClient = Depends(get_broker_client),
 ) -> list[str]:
     """
     Get the account with a specific email.
@@ -150,6 +160,7 @@ def get_names(
     return [
         a.name
         for a in _cache_broker_api_call(
+            broker_client=broker_client,
             status=status,
             asset_class=asset_class,
             exchange=exchange,
@@ -159,7 +170,10 @@ def get_names(
 
 
 @router.get("/names/{name}")
-def get_asset_by_name(name: str) -> Asset:
+def get_asset_by_name(
+    name: str,
+    broker_client: BrokerClient = Depends(get_broker_client),
+) -> Asset:
     """
     Get the asset with a specific name.
 
@@ -173,7 +187,7 @@ def get_asset_by_name(name: str) -> Asset:
     Asset:
         the asset matching the name.
     """
-    for a in _cache_broker_api_call():
+    for a in _cache_broker_api_call(broker_client=broker_client):
         if a.name == name:
             return a
     raise HTTPException(

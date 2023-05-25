@@ -2,6 +2,7 @@
 from alpaca_partner_backend.models.api import (
     AccountJson,
     AccountTrading,
+    Activity,
     CreateAccountRequest,
     JournalRequestBody,
 )
@@ -15,6 +16,7 @@ from alpaca_partner_backend.models.user import (
 
 __all__ = [
     "AccountTrading",
+    "Activity",
     "AuthCredentials",
     "CreateAccountRequest",
     "DatabaseDocument",

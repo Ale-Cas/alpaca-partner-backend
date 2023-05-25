@@ -7,7 +7,6 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import EmailStr
 
-from alpaca_partner_backend.api.common import get_broker_client
 from alpaca_partner_backend.api.parsers import parse_user_to_output
 from alpaca_partner_backend.database import MongoDatabase, get_db
 from alpaca_partner_backend.enums.api import Routers
@@ -23,7 +22,6 @@ router = APIRouter(
     tags=[Routers.USERS.name],
 )
 
-broker_client = get_broker_client()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 

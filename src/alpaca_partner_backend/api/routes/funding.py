@@ -35,7 +35,7 @@ def create_journal(
     `amount`: float
         the amount of the cash journal.
     """
-    user_acct_id = _get_account_id_by_email(user.email)
+    user_acct_id = _get_account_id_by_email(user.email, broker_client=broker_client)
     sweep_acct_id = "4c0563fb-40b9-3d89-89d5-a976d1b45e4f"
     journal = broker_client.create_journal(
         CreateJournalRequest(

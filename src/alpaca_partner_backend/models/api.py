@@ -1,9 +1,11 @@
 """Base models for requests and responses of the API."""
+from datetime import date, datetime
 from typing import Any
 from uuid import uuid4
 
 from alpaca.broker import (
     AccountDocument,
+    ActivityType,
     Agreement,
     Contact,
     Disclosures,
@@ -14,6 +16,8 @@ from alpaca.broker import (
 from alpaca.broker import CreateAccountRequest as AlpacaCreateAccountRequest
 from alpaca.trading.enums import AccountStatus
 from pydantic import BaseModel
+
+from alpaca_partner_backend.enums import ActivityName
 
 
 def _parse_optional_id_in_documents(account_data: dict[str, Any]) -> None:
@@ -83,4 +87,13 @@ class JournalRequestBody(BaseModel):
     """Journal request body."""
 
     to_user: bool
+    amount: float
+
+
+class Activity(BaseModel):
+    """Base model to return account activities with a fixed format."""
+
+    activity_type: ActivityType
+    activity_name: ActivityName
+    date: datetime | date
     amount: float
