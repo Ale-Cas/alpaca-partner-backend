@@ -78,10 +78,6 @@ def get_all_orders(
     orders = []
     for raw_order in _orders:
         assert isinstance(raw_order, dict)
-        o = (
-            Order(**raw_order)
-            if isinstance(raw_order.get("commission", None), float)
-            else Order(**raw_order, commission=0)
-        )
+        o = Order(**raw_order) if "commission" in raw_order else Order(**raw_order, commission=0)
         orders.append(o)
     return orders
