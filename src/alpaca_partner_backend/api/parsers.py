@@ -68,6 +68,14 @@ def parse_activities(account_activities: list[BaseActivity]) -> list[Activity]:
             _name = ActivityName.ACH_DEPOSIT
         elif _type == ActivityType.CSW:
             _name = ActivityName.ACH_WITHDRAWAL
+        elif _type == ActivityType.FEE:
+            _description = str(_activity.get("description"))
+            if "REG" in _description:
+                _name = ActivityName.REG_FEE
+            elif "TAF" in _description:
+                _name = ActivityName.TAF_FEE
+            else:
+                _name = ActivityName.FEE
         else:
             _name = _type
         _activities.append(

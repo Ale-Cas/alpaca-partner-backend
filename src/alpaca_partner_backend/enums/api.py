@@ -10,6 +10,7 @@ class Routers(str, Enum):
     FUNDING = "/funding"
     ORDERS = "/orders"
     PRICES = "/prices"
+    POSITIONS = "/positions"
     USERS = "/users"
 
 
@@ -36,6 +37,7 @@ class ActivityName(str, Enum):
     ACH_WITHDRAWAL = "ACH Withdrawal"
     REG_FEE = "REG Fee"
     TAF_FEE = "TAF Fee"
+    FEE = "Fee"
     DIV = "Dividend"
     SPLIT = "Split"
     SPIN = "Spin-off"

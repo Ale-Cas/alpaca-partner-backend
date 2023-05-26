@@ -66,12 +66,22 @@ def get_all_orders(
         The orders for the current user account.
     """
     acct_id = _get_account_id_by_email(email=user.email, broker_client=broker_client)
-    orders = broker_client.get_orders_for_account(
+    broker_client._use_raw_data = True
+    _orders = broker_client.get_orders_for_account(
         account_id=acct_id,
         filter=GetOrdersRequest(
             status=QueryOrderStatus.ALL,
             limit=limit,
         ),
     )
-    assert isinstance(orders, list)
+    broker_client._use_raw_data = False
+    orders = []
+    for raw_order in _orders:
+        assert isinstance(raw_order, dict)
+        o = (
+            Order(**raw_order)
+            if isinstance(raw_order.get("commission", None), float)
+            else Order(**raw_order, commission=0)
+        )
+        orders.append(o)
     return orders

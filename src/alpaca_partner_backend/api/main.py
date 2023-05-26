@@ -12,7 +12,15 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pymongo.errors import DuplicateKeyError
 
-from alpaca_partner_backend.api.routes import accounts, assets, funding, orders, prices, users
+from alpaca_partner_backend.api.routes import (
+    accounts,
+    assets,
+    funding,
+    orders,
+    positions,
+    prices,
+    users,
+)
 from alpaca_partner_backend.database import MongoDatabase, get_db
 from alpaca_partner_backend.models import Token
 from alpaca_partner_backend.utils.security import create_access_token
@@ -37,6 +45,7 @@ app.include_router(accounts.router)
 app.include_router(assets.router)
 app.include_router(funding.router)
 app.include_router(orders.router)
+app.include_router(positions.router)
 app.include_router(prices.router)
 app.include_router(users.router)
 
