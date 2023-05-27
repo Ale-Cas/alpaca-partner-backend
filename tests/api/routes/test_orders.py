@@ -46,7 +46,7 @@ def test_mock_get_orders(
     alpaca_account: Account,
     mock_api_client_with_user: TestClient,
 ) -> None:
-    """Test the GET assets endpoint with underlying API call cached."""
+    """Test the GET orders endpoint."""
     reqmock.get(
         url=f"{BaseURL.BROKER_SANDBOX}/v1/accounts?query={str(TEST_EMAIL)}",
         text=mock_get_alpaca_account_by_email,
@@ -61,3 +61,25 @@ def test_mock_get_orders(
     assert httpx.codes.is_success(response.status_code)
     orders = response.json()
     assert isinstance(orders, list)
+
+
+def test_mock_cancel_order(
+    reqmock: Mocker,
+    mock_get_alpaca_account_by_email: str,
+    mock_order: Order,
+    alpaca_account: Account,
+    mock_api_client_with_user: TestClient,
+) -> None:
+    """Test the DELETE order endpoint."""
+    ord_id = str(mock_order.id)
+    reqmock.get(
+        url=f"{BaseURL.BROKER_SANDBOX}/v1/accounts?query={str(TEST_EMAIL)}",
+        text=mock_get_alpaca_account_by_email,
+    )
+    reqmock.delete(
+        url=f"{BaseURL.BROKER_SANDBOX}/v1/trading/accounts/{alpaca_account.id}/orders/{ord_id}",
+    )
+    response = mock_api_client_with_user.delete(
+        url=f"{ROUTER}/{ord_id}",
+    )
+    assert httpx.codes.is_success(response.status_code)

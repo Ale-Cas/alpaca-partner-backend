@@ -23,7 +23,7 @@ router = APIRouter(
 @lru_cache
 def _cache_broker_api_call(
     broker_client: BrokerClient,
-    status: AssetStatus | None = None,
+    status: AssetStatus | None = AssetStatus.ACTIVE,
     asset_class: AssetClass | None = None,
     exchange: AssetExchange | None = None,
 ) -> list[Asset]:

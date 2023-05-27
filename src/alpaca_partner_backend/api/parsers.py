@@ -76,6 +76,8 @@ def parse_activities(account_activities: list[BaseActivity]) -> list[Activity]:
                 _name = ActivityName.TAF_FEE
             else:
                 _name = ActivityName.FEE
+        elif _type == ActivityType.DIV:
+            _name = ActivityName.DIV
         else:
             _name = _type
         _activities.append(

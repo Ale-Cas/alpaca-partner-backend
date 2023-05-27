@@ -81,3 +81,16 @@ def get_all_orders(
         o = Order(**raw_order) if "commission" in raw_order else Order(**raw_order, commission=0)
         orders.append(o)
     return orders
+
+
+@router.delete("/{order_id}")
+def cancel_order(
+    order_id: str,
+    user: User = Depends(get_current_user),
+    broker_client: BrokerClient = Depends(get_broker_client),
+) -> None:
+    """Cancel the order using the order ID."""
+    broker_client.cancel_order_for_account_by_id(
+        account_id=_get_account_id_by_email(email=user.email, broker_client=broker_client),
+        order_id=order_id,
+    )

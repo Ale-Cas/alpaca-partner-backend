@@ -48,14 +48,7 @@ def get_current_user(
                 raise credentials_exception
         except JWTError as jwt_exception:
             raise credentials_exception from jwt_exception
-    user = database.get_user_by_email(email=_email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with email address {_email} not found",
-            headers=_headers,
-        )
-    return user
+    return database.get_user_by_email(email=_email)
 
 
 @router.post("/register")

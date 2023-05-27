@@ -26,6 +26,32 @@ def test_get_assets(
     assert assets
 
 
+def test_get_apple_by_symbol(
+    mock_api_client: TestClient,
+) -> None:
+    """Integration test the GET assets endpoint with AAPL as symbol."""
+    symbol = "AAPL"
+    response = mock_api_client.get(
+        url=f"{ROUTER}/symbols/{symbol}",
+    )
+    assert httpx.codes.is_success(response.status_code)
+    asset = Asset(**response.json())
+    assert asset.symbol == symbol
+
+
+def test_get_asset_by_symbol_error(
+    mock_api_client: TestClient,
+) -> None:
+    """Integration test the GET assets endpoint with non-existent symbol symbol."""
+    symbol = "TESTERROR"
+    response = mock_api_client.get(
+        url=f"{ROUTER}/symbols/{symbol}",
+    )
+    assert httpx.codes.is_error(response.status_code)
+    assert response.status_code == httpx.codes.NOT_FOUND
+    assert response.json()["detail"] == f"No asset with symbol {symbol} was found."
+
+
 def test_mock_get_assets(
     reqmock: Mocker,
     mock_api_client: TestClient,
@@ -40,6 +66,38 @@ def test_mock_get_assets(
     assert httpx.codes.is_success(response.status_code)
     assets = [Asset(**a) for a in response.json()]
     assert assets
+
+
+def test_mock_get_symbols(
+    reqmock: Mocker,
+    mock_api_client: TestClient,
+    mock_assets_json: str,
+) -> None:
+    """Test the GET symbols endpoint with underlying API call cached."""
+    reqmock.get(
+        url=f"{BaseURL.BROKER_SANDBOX}/v1/assets",
+        text=mock_assets_json,
+    )
+    response = mock_api_client.get(url=ROUTER + "/symbols")
+    assert httpx.codes.is_success(response.status_code)
+    symbols = response.json()
+    assert isinstance(symbols, list)
+
+
+def test_mock_get_names(
+    reqmock: Mocker,
+    mock_api_client: TestClient,
+    mock_assets_json: str,
+) -> None:
+    """Test the GET names endpoint with underlying API call cached."""
+    reqmock.get(
+        url=f"{BaseURL.BROKER_SANDBOX}/v1/assets",
+        text=mock_assets_json,
+    )
+    response = mock_api_client.get(url=ROUTER + "/names")
+    assert httpx.codes.is_success(response.status_code)
+    names = response.json()
+    assert isinstance(names, list)
 
 
 def test_mock_get_active_assets(

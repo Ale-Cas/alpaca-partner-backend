@@ -1,5 +1,7 @@
 """Factories for mocking the Broker API calls."""
 
+from uuid import uuid4
+
 from alpaca.broker.enums import (
     AgreementType,
     FundingSource,
@@ -13,8 +15,16 @@ from alpaca.broker.models import (
     Identity,
     TrustedContact,
 )
-from alpaca.trading.enums import DTBPCheck, PDTCheck
+from alpaca.trading.enums import (
+    ActivityType,
+    DTBPCheck,
+    NonTradeActivityStatus,
+    OrderSide,
+    OrderStatus,
+    PDTCheck,
+)
 from alpaca.trading.models import AccountConfiguration as TradeAccountConfiguration
+from alpaca.trading.models import NonTradeActivity, TradeActivity, TradeActivityType
 
 
 def create_dummy_identity() -> Identity:
@@ -157,3 +167,85 @@ def create_dummy_trade_account_configuration() -> TradeAccountConfiguration:
         suspend_trade=False,
         trade_confirm_email="all",
     )
+
+
+def create_dummy_trade_activities() -> list[TradeActivity]:
+    """
+    Create a basic list[TradeActivity] with prefilled dummy data for both a FILLED and PARTIALLY_FILLED order.
+
+    Returns
+    -------
+        list[TradeActivity]: A basic list[TradeActivity] with prefilled data for testing.
+    """
+    return [
+        TradeActivity(
+            symbol="TEST",
+            id=str(uuid4()),
+            account_id=uuid4(),
+            order_id=uuid4(),
+            activity_type=ActivityType.FILL,
+            transaction_time="2022-01-21T21:25:28.189455Z",
+            type=TradeActivityType.FILL,
+            price=1,
+            qty=1,
+            side=OrderSide.BUY,
+            order_status=OrderStatus.FILLED,
+            leaves_qty=0,
+            cum_qty=1,
+        ),
+        TradeActivity(
+            symbol="TEST",
+            id=str(uuid4()),
+            account_id=uuid4(),
+            order_id=uuid4(),
+            activity_type=ActivityType.FILL,
+            transaction_time="2022-01-21T21:25:28.189455Z",
+            type=TradeActivityType.PARTIAL_FILL,
+            price=1,
+            qty=1,
+            side=OrderSide.BUY,
+            order_status=OrderStatus.PARTIALLY_FILLED,
+            leaves_qty=0,
+            cum_qty=1,
+        ),
+    ]
+
+
+def create_dummy_non_trade_activities() -> list[NonTradeActivity]:
+    """
+    Create a basic list[NonTradeActivity] with prefilled dummy data for both a FILLED and PARTIALLY_FILLED order.
+
+    Returns
+    -------
+        list[NonTradeActivity]: A basic list[NonTradeActivity] with prefilled data for testing.
+    """
+    return [
+        NonTradeActivity(
+            description="REG fee",
+            id=str(uuid4()),
+            account_id=uuid4(),
+            activity_type=ActivityType.FEE,
+            date="2022-01-21",
+            status=NonTradeActivityStatus.EXECUTED,
+            net_amount=0.1,
+        ),
+        NonTradeActivity(
+            description="TAF fee",
+            id=str(uuid4()),
+            account_id=uuid4(),
+            activity_type=ActivityType.FEE,
+            date="2022-01-21",
+            status=NonTradeActivityStatus.EXECUTED,
+            net_amount=0.1,
+        ),
+        NonTradeActivity(
+            description="Cash DIV @ 0.0541, Pos QTY: 0.131126008, Rec Date: 2022-11-02",
+            symbol="TEST",
+            id=str(uuid4()),
+            account_id=uuid4(),
+            activity_type=ActivityType.DIV,
+            date="2022-01-21",
+            status=NonTradeActivityStatus.EXECUTED,
+            net_amount=0.1,
+        ),
+    ]

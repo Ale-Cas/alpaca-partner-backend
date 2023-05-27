@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     # Alpaca Broker API:
     BROKER_API_KEY: str
     BROKER_API_SECRET: str
+    SWEEP_ACCOUNT_ID: str
 
     # Database:
     MONGO_DB_URI: str

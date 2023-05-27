@@ -9,6 +9,7 @@ from alpaca_partner_backend.api.routes.accounts import _get_account_id_by_email
 from alpaca_partner_backend.api.routes.users import get_current_user
 from alpaca_partner_backend.enums import Routers
 from alpaca_partner_backend.models import JournalRequestBody, User
+from alpaca_partner_backend.settings import SETTINGS
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -36,11 +37,10 @@ def create_journal(
         the amount of the cash journal.
     """
     user_acct_id = _get_account_id_by_email(user.email, broker_client=broker_client)
-    sweep_acct_id = "4c0563fb-40b9-3d89-89d5-a976d1b45e4f"
     journal = broker_client.create_journal(
         CreateJournalRequest(
-            from_account=sweep_acct_id if request_body.to_user else user_acct_id,
-            to_account=user_acct_id if request_body.to_user else sweep_acct_id,
+            from_account=SETTINGS.SWEEP_ACCOUNT_ID if request_body.to_user else user_acct_id,
+            to_account=user_acct_id if request_body.to_user else SETTINGS.SWEEP_ACCOUNT_ID,
             entry_type=JournalEntryType.CASH,
             amount=request_body.amount,
         )
