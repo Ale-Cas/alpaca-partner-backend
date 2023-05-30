@@ -97,3 +97,4 @@ class Activity(BaseModel):
     activity_name: ActivityName
     date: datetime | date
     amount: float
+    symbol: str | None

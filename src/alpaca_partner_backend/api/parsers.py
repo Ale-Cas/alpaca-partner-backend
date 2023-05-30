@@ -81,6 +81,12 @@ def parse_activities(account_activities: list[BaseActivity]) -> list[Activity]:
         else:
             _name = _type
         _activities.append(
-            Activity(activity_type=_type, activity_name=_name, date=_date, amount=_amount)
+            Activity(
+                activity_type=_type,
+                activity_name=_name,
+                date=_date,
+                amount=_amount,
+                symbol=_activity.get("symbol", None),
+            )
         )
     return _activities

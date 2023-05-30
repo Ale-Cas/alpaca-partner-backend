@@ -43,6 +43,8 @@ jobs:
             # broker API keys
             envkey_BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
             envkey_BROKER_API_SECRET: ${{ secrets.BROKER_API_SECRET }}
+            # broker sweep acct ID
+            envkey_SWEEP_ACCOUNT_ID: ${{ secrets.SWEEP_ACCOUNT_ID }}
             # database connection
             envkey_MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
             # user auth secret key
