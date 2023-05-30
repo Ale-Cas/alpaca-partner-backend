@@ -40,6 +40,8 @@ ruff = "^0.0.254"
 mongomock = "^4.1.2"
 responses = "0.22.0"
 requests-mock = "^1.10.0"
+types-requests = "^2.31.0.1"
+types-urllib3 = "^1.26.25.13"
 
 [tool.poetry.group.dev.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 cruft = "^2.12.0"

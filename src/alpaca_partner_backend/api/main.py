@@ -16,6 +16,7 @@ from alpaca_partner_backend.api.routes import (
     accounts,
     assets,
     funding,
+    logos,
     orders,
     positions,
     prices,
@@ -44,6 +45,7 @@ app.add_middleware(
 app.include_router(accounts.router)
 app.include_router(assets.router)
 app.include_router(funding.router)
+app.include_router(logos.router)
 app.include_router(orders.router)
 app.include_router(positions.router)
 app.include_router(prices.router)

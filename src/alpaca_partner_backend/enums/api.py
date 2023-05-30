@@ -8,6 +8,7 @@ class Routers(str, Enum):
     ACCOUNTS = "/accounts"
     ASSETS = "/assets"
     FUNDING = "/funding"
+    LOGOS = "/logos"
     ORDERS = "/orders"
     PRICES = "/prices"
     POSITIONS = "/positions"
