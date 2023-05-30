@@ -5,7 +5,7 @@ from alpaca.broker import BrokerClient, Order
 from alpaca.trading import GetOrdersRequest, OrderRequest, QueryOrderStatus
 from fastapi import APIRouter, Depends
 
-from alpaca_partner_backend.api.common import get_broker_client
+from alpaca_partner_backend.api.common import get_broker_client, get_raw_broker_client
 from alpaca_partner_backend.api.routes.accounts import _get_account_id_by_email
 from alpaca_partner_backend.api.routes.users import get_current_user
 from alpaca_partner_backend.enums import Routers
@@ -51,7 +51,7 @@ def create_order(
 def get_all_orders(
     limit: int = 500,
     user: User = Depends(get_current_user),
-    broker_client: BrokerClient = Depends(get_broker_client),
+    broker_client: BrokerClient = Depends(get_raw_broker_client),
 ) -> list[Order]:
     """Create an order for the current user account.
 
@@ -66,7 +66,6 @@ def get_all_orders(
         The orders for the current user account.
     """
     acct_id = _get_account_id_by_email(email=user.email, broker_client=broker_client)
-    broker_client._use_raw_data = True
     _orders = broker_client.get_orders_for_account(
         account_id=acct_id,
         filter=GetOrdersRequest(
@@ -74,7 +73,6 @@ def get_all_orders(
             limit=limit,
         ),
     )
-    broker_client._use_raw_data = False
     orders = []
     for raw_order in _orders:
         assert isinstance(raw_order, dict)

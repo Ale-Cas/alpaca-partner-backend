@@ -18,6 +18,16 @@ def get_broker_client() -> BrokerClient:
 
 
 @lru_cache
+def get_raw_broker_client() -> BrokerClient:
+    """Get application settings based on the environment and cache the broker client."""
+    return BrokerClient(
+        api_key=SETTINGS.BROKER_API_KEY,
+        secret_key=SETTINGS.BROKER_API_SECRET,
+        raw_data=True,
+    )
+
+
+@lru_cache
 def get_data_client() -> StockHistoricalDataClient:
     """Get application settings based on the environment and cache the market data client."""
     return StockHistoricalDataClient(
