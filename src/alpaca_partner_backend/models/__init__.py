@@ -5,6 +5,7 @@ from alpaca_partner_backend.models.api import (
     Activity,
     CreateAccountRequest,
     JournalRequestBody,
+    QuoteJson,
 )
 from alpaca_partner_backend.models.database import DatabaseDocument
 from alpaca_partner_backend.models.user import (
@@ -23,6 +24,7 @@ __all__ = [
     "AccountJson",
     "JournalRequestBody",
     "Token",
+    "QuoteJson",
     "User",
     "UserOut",
 ]

@@ -5,12 +5,20 @@ from functools import lru_cache
 from typing import Any
 
 import pandas as pd
-from alpaca.data import Adjustment, BarSet, StockBarsRequest, StockHistoricalDataClient, TimeFrame
-from fastapi import APIRouter, Depends
+from alpaca.data import (
+    Adjustment,
+    BarSet,
+    StockBarsRequest,
+    StockHistoricalDataClient,
+    StockLatestQuoteRequest,
+    TimeFrame,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from alpaca_partner_backend.api import parsers
 from alpaca_partner_backend.api.common import get_data_client
 from alpaca_partner_backend.enums import BarsField, Routers
+from alpaca_partner_backend.models.api import QuoteJson
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -66,3 +74,22 @@ def get_bars(
     return parsers.parse_df_to_list(
         bars if not bars_field else bars.loc[:, ["timestamp", bars_field]]
     )
+
+
+@router.get("/quotes/latest")
+def get_latest_quote(
+    symbol: str,
+    data_client: StockHistoricalDataClient = Depends(get_data_client),
+) -> QuoteJson:
+    """Get the latest quote from IEX for a certain symbol."""
+    if not symbol:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No symbol provided"
+        )
+    quote = data_client.get_stock_latest_quote(
+        StockLatestQuoteRequest(
+            symbol_or_symbols=symbol,
+        )
+    )
+    assert isinstance(quote, dict)
+    return parsers.parse_quote_to_jsonable(quote[symbol])

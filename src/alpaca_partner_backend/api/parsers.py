@@ -1,10 +1,18 @@
 """Parse models for the API endpoints."""
 import pandas as pd
 from alpaca.broker import Account, ActivityType, TradeAccount
+from alpaca.data import Quote
 from alpaca.trading import BaseActivity, OrderSide
 
 from alpaca_partner_backend.enums import ActivityName
-from alpaca_partner_backend.models import AccountJson, AccountTrading, Activity, User, UserOut
+from alpaca_partner_backend.models import (
+    AccountJson,
+    AccountTrading,
+    Activity,
+    QuoteJson,
+    User,
+    UserOut,
+)
 
 
 def parse_account_to_jsonable(account: Account) -> AccountJson:
@@ -22,13 +30,12 @@ def parse_account_to_trading(account: TradeAccount) -> AccountTrading:
 
     Takes care of UUID to str conversion.
     """
-    return AccountTrading(
-        equity=account.equity,
-        cash=account.cash,
-        buying_power=account.buying_power,
-        currency=account.currency,
-        daytrade_count=account.daytrade_count,
-    )
+    return AccountTrading(**account.dict())
+
+
+def parse_quote_to_jsonable(quote: Quote) -> QuoteJson:
+    """Parse the quote to a jsonable version of it."""
+    return QuoteJson(**quote.dict())
 
 
 def parse_user_to_output(user: User) -> UserOut:

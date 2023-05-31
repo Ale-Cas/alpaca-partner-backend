@@ -79,6 +79,7 @@ class AccountTrading(BaseModel):
     equity: float
     cash: float
     buying_power: float
+    portfolio_value: float
     currency: SupportedCurrencies
     daytrade_count: int
 
@@ -98,3 +99,14 @@ class Activity(BaseModel):
     date: datetime | date
     amount: float
     symbol: str | None
+
+
+class QuoteJson(BaseModel):
+    """Base model to return only necessary quote fields."""
+
+    symbol: str
+    timestamp: datetime
+    ask_exchange: str
+    ask_price: float
+    bid_exchange: str
+    bid_price: float
