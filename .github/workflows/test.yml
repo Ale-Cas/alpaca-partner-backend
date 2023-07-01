@@ -38,7 +38,7 @@ jobs:
           PYTHON_VERSION=${{ matrix.python-version }} devcontainer up --workspace-folder .
           
       - name: Make envfile
-        uses: SpicyPizza/create-envfile@v1.3
+        uses: SpicyPizza/create-envfile@v2.0
         with:
             # broker API keys
             envkey_BROKER_API_KEY: ${{ secrets.BROKER_API_KEY }}
